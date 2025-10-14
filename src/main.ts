@@ -11,7 +11,7 @@ import { BPMManager } from './rhythm/BPMManager';
 const midiManager = new APCMiniMK2Manager();
 const sceneManager = new SceneManager(midiManager, DEFAULT_SCENE_LIBRARY);
 const bpmManager = new BPMManager();
-const keyboardController = new KeyboardController(sceneManager, midiManager, bpmManager);
+new KeyboardController(sceneManager, midiManager, bpmManager);
 
 const sketch = (p: p5) => {
   p.setup = () => {
