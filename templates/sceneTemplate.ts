@@ -1,49 +1,46 @@
 import p5 from 'p5';
-import type { IScene, SceneDrawContext } from '../src/core/IScene';
+// @ts-ignore: 生成時に適切な相対パスへと置換される
+import type { IScene, SceneDrawContext } from '__CORE_IMPORT__';
+// @ts-ignore: 生成時に適切な相対パスへと置換される
+import { contextToggleEnergy, contextToggleValue } from '__UTILS_IMPORT__';
 
 /**
  * __CLASS_NAME__
  * ----------------------
- * シンプルなサンプルシーン。必要に応じてパラメーターや描画ロジックを拡張してください。
+ * シンプルなサンプル実装です。任意のロジックに置き換えて使ってください。
  */
 export class __CLASS_NAME__ implements IScene {
-  public name: string = '__DISPLAY_NAME__';
+  public readonly name = '__DISPLAY_NAME__';
+  private phase = 0;
 
-  public setup(p: p5, buffer: p5.Graphics, columnIndex: number): void {
-    // 初期化処理をここに記述します。
+  public setup(_p: p5, _buffer: p5.Graphics, _columnIndex: number): void {
+    this.phase = 0;
   }
 
   public draw(p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
     buffer.clear();
     buffer.push();
     buffer.translate(buffer.width / 2, buffer.height / 2);
-    buffer.rectMode(p.CENTER);
 
-    const circleCount = 5; // 固定値の例（必要に応じて変更）
-    const baseSize = buffer.height * 0.1;
-    const toggleInfluence = context.toggles.length > 0
-      ? context.toggles.reduce((sum, value) => sum + value, 0) / context.toggles.length
-      : 0;
+    const energy = contextToggleEnergy(context);
+    this.phase += context.deltaSeconds * (0.5 + energy * 0.8);
 
-    buffer.noStroke();
-    buffer.fill(200, 100, 100 + toggleInfluence * 50);
+    const ringCount = 6;
+    const baseRadius = buffer.height * 0.12;
 
-    for (let i = 0; i < circleCount; i++) {
-      const angle = (p.TWO_PI / circleCount) * i + context.elapsedSeconds * (1 + toggleInfluence * 0.5);
-      const x = Math.cos(angle) * buffer.width * 0.3;
-      const y = Math.sin(angle) * buffer.height * 0.3;
-      const sizeMod = 1 + toggleInfluence * 0.6;
-      buffer.ellipse(x, y, baseSize * sizeMod, baseSize * sizeMod);
+    buffer.noFill();
+    buffer.strokeWeight(4);
+
+    for (let index = 0; index < ringCount; index++) {
+      const toggle = contextToggleValue(context, index);
+      const radius = baseRadius * (1 + index * 0.6 + toggle * 0.8 + energy * 0.4);
+      const hue = (context.columnIndex * 35 + index * 25 + toggle * 70) % 360;
+      const alpha = Math.max(0.2, 0.65 - index * 0.08 + energy * 0.1);
+      buffer.stroke(`hsla(${hue}, 70%, 60%, ${alpha})`);
+      const wobble = p.sin(this.phase + index * 0.7) * radius * 0.1;
+      buffer.ellipse(0, wobble, radius * 2, radius * 2);
     }
 
     buffer.pop();
-  }
-
-  public resize(_p: p5): void {
-    // 必要に応じてリサイズ処理を実装してください。
-  }
-
-  public destroy(): void {
-    // 後処理が必要な場合はここに記述します。
   }
 }
