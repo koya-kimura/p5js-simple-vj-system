@@ -22,6 +22,7 @@ const sketch = (p: p5) => {
 
   p.draw = () => {
     const deltaSeconds = p.deltaTime / 1000;
+    bpmManager.update();
     sceneManager.update(p, deltaSeconds);
     sceneManager.composite(p);
   };

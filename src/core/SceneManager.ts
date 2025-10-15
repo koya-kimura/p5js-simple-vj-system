@@ -22,6 +22,7 @@ export class SceneManager {
     private keyboardOverrideColumn: number | null = null;
     private debugOverlayActive = false;
     private lastVisibleColumnCount = 0;
+    private readonly toggleStates: number[] = Array(7).fill(0);
 
     constructor(apcManager: APCMiniMK2Manager, sceneLibrary: SceneLibraryGrid) {
         this.apcManager = apcManager;
@@ -33,23 +34,22 @@ export class SceneManager {
         this.elapsedSeconds = 0;
         const columnCount = this.apcManager.getColumnCount();
 
-        const columnSceneCounts: number[] = [];
-        for (let columnIndex = 0; columnIndex < columnCount; columnIndex++) {
-            const constructors = (this.sceneLibrary[columnIndex] ?? []).slice(0, GRID_ROWS);
-            columnSceneCounts[columnIndex] = constructors.length;
-        }
+        const columnConstructors: SceneConstructor[][] = Array.from({ length: columnCount }, (_, columnIndex) =>
+            (this.sceneLibrary[columnIndex] ?? []).slice(0, GRID_ROWS),
+        );
+
+        const columnSceneCounts = columnConstructors.map((constructors) => constructors.length);
         this.apcManager.configureSceneSlots(columnSceneCounts);
 
-        for (let columnIndex = 0; columnIndex < columnCount; columnIndex++) {
+        this.columns = columnConstructors.map((constructors, columnIndex) => {
             const buffer = this.createBuffer(p);
-            const constructors = (this.sceneLibrary[columnIndex] ?? []).slice(0, GRID_ROWS);
             const sceneIndex = this.apcManager.getColumnSceneSelection(columnIndex);
             const scene = this.instantiateScene(constructors, sceneIndex);
             if (scene) {
                 scene.setup(p, buffer, columnIndex);
             }
-            this.columns.push({ buffer, constructors, sceneIndex, scene });
-        }
+            return { buffer, constructors, sceneIndex, scene };
+        });
     }
 
     update(p: p5, deltaSeconds: number): void {
@@ -103,6 +103,7 @@ export class SceneManager {
                 columnIndex,
                 elapsedSeconds: this.elapsedSeconds,
                 deltaSeconds,
+                toggles: this.toggleStates,
             };
             slot.scene.draw(p, slot.buffer, context);
         }
@@ -145,11 +146,6 @@ export class SceneManager {
             visibleColumns++;
             ctx.globalAlpha = alpha;
             p.image(slot.buffer, 0, 0, p.width, p.height);
-        }
-
-        // Debug: log visible columns count every 60 frames
-        if (p.frameCount % 60 === 0 && visibleColumns > 0) {
-            console.log(`Visible columns: ${visibleColumns}`);
         }
 
         this.lastVisibleColumnCount = visibleColumns;
@@ -234,6 +230,13 @@ export class SceneManager {
             `Visible Columns: ${this.lastVisibleColumnCount}`,
             `Scene Slots: ${totalSceneSlots}`,
         ];
+
+        const toggleKeys = ['Z', 'X', 'C', 'V', 'B', 'N', 'M'];
+        const toggleSegments = toggleKeys.map((label, index) => {
+            const value = this.toggleStates[index] ?? 0;
+            return `${label}:${value.toFixed(0)}`;
+        });
+        lines.push(`Toggles: ${toggleSegments.join(' ')}`);
 
         for (let columnIndex = 0; columnIndex < this.columns.length; columnIndex++) {
             const slot = this.columns[columnIndex];
@@ -337,5 +340,23 @@ export class SceneManager {
             column.sceneIndex = null;
             column.scene = null;
         });
+    }
+
+    public toggleParameter(index: number): void {
+        if (index < 0 || index >= this.toggleStates.length) {
+            return;
+        }
+        this.toggleStates[index] = this.toggleStates[index] > 0 ? 0 : 1;
+    }
+
+    public setParameter(index: number, active: boolean): void {
+        if (index < 0 || index >= this.toggleStates.length) {
+            return;
+        }
+        this.toggleStates[index] = active ? 1 : 0;
+    }
+
+    public getToggleStates(): readonly number[] {
+        return this.toggleStates;
     }
 }

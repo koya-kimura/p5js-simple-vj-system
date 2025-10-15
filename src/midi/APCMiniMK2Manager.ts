@@ -1,5 +1,6 @@
 // src/midi/APCMiniMK2Manager.ts
 
+import { GRID_COLUMNS, GRID_ROWS } from '../core/SceneLibrary';
 import { MIDIManager } from './midiManager';
 
 const MIDI_STATUS_IN = {
@@ -11,28 +12,28 @@ const MIDI_OUTPUT_NOTE_ON = 0x96;
 const MIDI_FADER_BUTTON_NOTE_ON = 0x90;
 const FADER_BUTTON_ACTIVE_VELOCITY = 127; // bright white for mute latch state
 
+const GRID_NOTE_COUNT = GRID_COLUMNS * GRID_ROWS;
+
 const NOTE_RANGES = {
   GRID_START: 0,
-  GRID_END: 63,
+  GRID_END: GRID_NOTE_COUNT - 1,
   FADERS_START: 48,
-  FADERS_END: 56,
+  FADERS_END: 48 + GRID_COLUMNS,
   FADER_BUTTONS_START: 100,
-  FADER_BUTTONS_END: 107,
+  FADER_BUTTONS_END: 100 + GRID_COLUMNS - 1,
 } as const;
 
-const GRID_ROWS = 8;
-const GRID_COLS = 8;
-const MASTER_FADER_INDEX = GRID_COLS;
+const MASTER_FADER_INDEX = GRID_COLUMNS;
 
 // Per-column active LED velocity/color (APC MK2 palette index). 8 values for 8 columns.
-const COLUMN_ACTIVE_VELOCITIES: number[] = [5, 53, 60, 13, 17, 32, 33, 45];
+const DEFAULT_COLUMN_ACTIVE_VELOCITIES: readonly number[] = [5, 53, 60, 13, 17, 32, 33, 45];
 
 /**
  * APC Mini MK2 のグリッドとフェーダーをシンプルに扱うためのクラス。
  * 列ごとに選択されたシーンインデックスとフェーダー値を管理する。
  */
 export class APCMiniMK2Manager extends MIDIManager {
-  public readonly faderValues: number[];
+  private readonly faderValues: number[];
 
   private readonly columnSceneSelections: Array<number | null>;
   private readonly columnSceneCounts: number[];
@@ -40,23 +41,27 @@ export class APCMiniMK2Manager extends MIDIManager {
   private readonly faderButtonLatch: boolean[];
   private readonly dirtyFaderButtons: Set<number> = new Set();
   private readonly rawFaderValues: number[];
+  private readonly columnActiveVelocities: number[];
   private initializationComplete = false;
   private midiAvailable = false;
 
   constructor() {
     super();
-    this.columnSceneSelections = Array(GRID_COLS).fill(null);
-    this.columnSceneCounts = Array(GRID_COLS).fill(0);
-    const faderLength = GRID_COLS + 1;
+    this.columnSceneSelections = Array.from({ length: GRID_COLUMNS }, () => null);
+    this.columnSceneCounts = Array(GRID_COLUMNS).fill(0);
+    const faderLength = GRID_COLUMNS + 1;
     // start with all faders at 0 by default
     this.faderValues = Array(faderLength).fill(0);
     this.rawFaderValues = Array(faderLength).fill(0);
-    this.faderButtonLatch = Array(GRID_COLS).fill(false);
+    this.faderButtonLatch = Array(GRID_COLUMNS).fill(false);
+    this.columnActiveVelocities = Array.from({ length: GRID_COLUMNS }, (_, index) =>
+      DEFAULT_COLUMN_ACTIVE_VELOCITIES[index] ?? 50,
+    );
     this.onMidiMessageCallback = this.handleMidiMessage.bind(this);
   }
 
   getColumnCount(): number {
-    return GRID_COLS;
+    return GRID_COLUMNS;
   }
 
   getColumnSceneSelection(columnIndex: number): number | null {
@@ -68,7 +73,7 @@ export class APCMiniMK2Manager extends MIDIManager {
   }
 
   getFaderValue(columnIndex: number): number {
-    if (columnIndex < GRID_COLS) {
+    if (columnIndex < GRID_COLUMNS) {
       if (this.faderButtonLatch[columnIndex]) {
         return 0;
       }
@@ -84,7 +89,7 @@ export class APCMiniMK2Manager extends MIDIManager {
   }
 
   setColumnSceneSelection(columnIndex: number, sceneIndex: number): void {
-    if (columnIndex < 0 || columnIndex >= GRID_COLS) {
+    if (columnIndex < 0 || columnIndex >= GRID_COLUMNS) {
       return;
     }
 
@@ -108,8 +113,8 @@ export class APCMiniMK2Manager extends MIDIManager {
   }
 
   configureSceneSlots(counts: number[]): void {
-    for (let column = 0; column < GRID_COLS; column++) {
-  const nextCount = Math.max(0, Math.min(GRID_ROWS, counts[column] ?? 0));
+    for (let column = 0; column < GRID_COLUMNS; column++) {
+      const nextCount = Math.max(0, Math.min(GRID_ROWS, counts[column] ?? 0));
       this.columnSceneCounts[column] = nextCount;
 
       const previousSelection = this.columnSceneSelections[column];
@@ -173,8 +178,8 @@ export class APCMiniMK2Manager extends MIDIManager {
     }
 
     const gridIndex = rawNote - NOTE_RANGES.GRID_START;
-    const columnIndex = gridIndex % GRID_COLS;
-    const rowFromTop = Math.floor(gridIndex / GRID_COLS);
+    const columnIndex = gridIndex % GRID_COLUMNS;
+    const rowFromTop = Math.floor(gridIndex / GRID_COLUMNS);
     const rowIndex = GRID_ROWS - 1 - rowFromTop;
     const available = this.columnSceneCounts[columnIndex] ?? 0;
     if (rowIndex < available) {
@@ -195,7 +200,7 @@ export class APCMiniMK2Manager extends MIDIManager {
     const normalized = value / 127;
     this.rawFaderValues[columnIndex] = normalized;
 
-    if (columnIndex < GRID_COLS && !this.faderButtonLatch[columnIndex]) {
+    if (columnIndex < GRID_COLUMNS && !this.faderButtonLatch[columnIndex]) {
       this.faderValues[columnIndex] = normalized;
     }
 
@@ -246,7 +251,7 @@ export class APCMiniMK2Manager extends MIDIManager {
       return;
     }
 
-    for (let column = 0; column < GRID_COLS; column++) {
+    for (let column = 0; column < GRID_COLUMNS; column++) {
       this.renderColumnLeds(column);
       this.renderFaderButtonLed(column);
     }
@@ -257,12 +262,12 @@ export class APCMiniMK2Manager extends MIDIManager {
     const sceneCount = this.columnSceneCounts[column] ?? 0;
 
     for (let row = 0; row < GRID_ROWS; row++) {
-      const gridIndex = (GRID_ROWS - 1 - row) * GRID_COLS + column;
+      const gridIndex = (GRID_ROWS - 1 - row) * GRID_COLUMNS + column;
       const note = NOTE_RANGES.GRID_START + gridIndex;
 
       if (row < sceneCount) {
         const isActive = selectedRow === row;
-        const velocity = isActive ? COLUMN_ACTIVE_VELOCITIES[column] ?? 50 : 3;
+        const velocity = isActive ? this.columnActiveVelocities[column] ?? 50 : 3;
         this.sendMessage([MIDI_OUTPUT_NOTE_ON, note, velocity]);
       } else {
         this.sendMessage([MIDI_OUTPUT_NOTE_ON, note, 0]);
@@ -282,8 +287,8 @@ export class APCMiniMK2Manager extends MIDIManager {
 
   // Optional helper to change the per-column active LED velocity at runtime
   public setColumnActiveVelocity(column: number, velocity: number): void {
-    if (column < 0 || column >= GRID_COLS) return;
-    COLUMN_ACTIVE_VELOCITIES[column] = velocity;
+    if (column < 0 || column >= GRID_COLUMNS) return;
+    this.columnActiveVelocities[column] = velocity;
     this.dirtyColumns.add(column);
   }
 
@@ -292,15 +297,15 @@ export class APCMiniMK2Manager extends MIDIManager {
   }
 
   private clearAllLeds(): void {
-    for (let column = 0; column < GRID_COLS; column++) {
+    for (let column = 0; column < GRID_COLUMNS; column++) {
       for (let row = 0; row < GRID_ROWS; row++) {
-        const gridIndex = row * GRID_COLS + column;
+        const gridIndex = row * GRID_COLUMNS + column;
         const note = NOTE_RANGES.GRID_START + gridIndex;
         this.sendMessage([MIDI_OUTPUT_NOTE_ON, note, 0]);
       }
     }
 
-    for (let column = 0; column < GRID_COLS; column++) {
+    for (let column = 0; column < GRID_COLUMNS; column++) {
       const note = this.getFaderButtonNote(column);
       if (note != null) {
         this.sendMessage([MIDI_FADER_BUTTON_NOTE_ON, note, 0]);
@@ -314,11 +319,11 @@ export class APCMiniMK2Manager extends MIDIManager {
     }
 
     const columnIndex = rawNote - NOTE_RANGES.FADER_BUTTONS_START;
-    return columnIndex >= 0 && columnIndex < GRID_COLS ? columnIndex : null;
+    return columnIndex >= 0 && columnIndex < GRID_COLUMNS ? columnIndex : null;
   }
 
   private getFaderButtonNote(columnIndex: number): number | null {
-    if (columnIndex < 0 || columnIndex >= GRID_COLS) {
+    if (columnIndex < 0 || columnIndex >= GRID_COLUMNS) {
       return null;
     }
 

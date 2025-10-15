@@ -24,6 +24,16 @@ const CYCLE_KEY_TO_COLUMN: Record<string, number> = {
   i: 7,
 };
 
+const TOGGLE_KEY_TO_INDEX: Record<string, number> = {
+  z: 0,
+  x: 1,
+  c: 2,
+  v: 3,
+  b: 4,
+  n: 5,
+  m: 6,
+};
+
 export class KeyboardController {
   private readonly handleKeyDownRef: (event: KeyboardEvent) => void;
   private readonly sceneManager: SceneManager;
@@ -43,6 +53,36 @@ export class KeyboardController {
 
     if (key === 'p') {
       this.sceneManager.toggleDebugOverlay();
+      event.preventDefault();
+      return;
+    }
+
+    if (key in TOGGLE_KEY_TO_INDEX) {
+      const toggleIndex = TOGGLE_KEY_TO_INDEX[key];
+      this.sceneManager.toggleParameter(toggleIndex);
+      event.preventDefault();
+      return;
+    }
+
+    if (key === ' ') {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen().catch(() => undefined);
+      }
+      event.preventDefault();
+      return;
+    }
+
+    if (key === 'enter') {
+      this.bpmManager.tapTempo();
+      event.preventDefault();
+      return;
+    }
+
+    if (key === 'shift') {
+      this.bpmManager.start();
+      this.sceneManager.resetBeat();
       event.preventDefault();
       return;
     }
@@ -68,27 +108,6 @@ export class KeyboardController {
       const columnIndex = NUMERIC_KEY_TO_COLUMN[key];
       this.sceneManager.handleKeyboardSelection(columnIndex);
       event.preventDefault();
-    }
-
-    if (key === ' ') {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
-      }
-      event.preventDefault();
-      return;
-    }
-
-    if (key === 'enter') {
-      this.bpmManager.tapTempo();
-      event.preventDefault();
-      return;
-    }
-
-    if (key === 'shift') {
-      this.bpmManager.start();
-      this.sceneManager.resetBeat();
-      event.preventDefault();
-      return;
     }
   }
 

@@ -6,6 +6,7 @@ export interface SceneDrawContext {
     columnIndex: number;
     elapsedSeconds: number;
     deltaSeconds: number;
+    toggles: readonly number[];
 }
 
 /**

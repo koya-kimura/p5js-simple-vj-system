@@ -1,14 +1,14 @@
 // src/core/SceneLibrary.ts
 
 import type { IScene } from './IScene';
-import { OrbitalPatternFieldScene } from '../scenes/OrbitalPatternFieldScene';
-import { LinearFlowGridScene } from '../scenes/LinearFlowGridScene';
-import { GlyphCascadeScene } from '../scenes/GlyphCascadeScene';
-import { RadialBloomScene } from '../scenes/RadialBloomScene';
-import { FallingSphereArrayScene } from '../scenes/FallingSphereArrayScene';
-import { RadialPulseConduitsScene } from '../scenes/RadialPulseConduitsScene';
-import { BinaryParticleLoomScene } from '../scenes/BinaryParticleLoomScene';
-import { PhotoPulseCollageScene } from '../scenes/PhotoPulseCollageScene';
+import { BioOrganicBloomScene, BioCellMeshScene, BioNeuralPulseScene } from '../scenes/bio/BioScenes';
+import { LightningArcStormScene, LightningIonBurstScene, LightningPulseGridScene } from '../scenes/lightning/LightningScenes';
+import { AudioSpectrumColumnScene, AudioSpectrumWaveScene, AudioSpectrumRadialScene } from '../scenes/audioSpectrum/AudioSpectrumScenes';
+import { ParticleDriftFieldScene, ParticleRibbonSwirlScene, ParticleCascadeScene } from '../scenes/particle/ParticleScenes';
+import { ShapeRotatingMosaicScene, ShapePolyOrbitScene, ShapeRecursiveGridScene } from '../scenes/shapes/ShapeScenes';
+import { OrientalSeigaihaScene, OrientalAsanohaScene, OrientalKikkoScene } from '../scenes/oriental/OrientalScenes';
+import { SkyAuroraVeilScene, SkyMeteorShowerScene, SkyNebulaBloomScene } from '../scenes/sky/SkyScenes';
+import { TextureWeaveScene, TextureNoiseFabricScene, TextureGlassShardScene } from '../scenes/texture/TextureScenes';
 
 export const GRID_COLUMNS = 8;
 export const GRID_ROWS = 8;
@@ -19,42 +19,44 @@ export type SceneLibraryGrid = SceneLibraryColumn[];
 
 export const DEFAULT_SCENE_LIBRARY: SceneLibraryGrid = [
     [
-        OrbitalPatternFieldScene,
-        LinearFlowGridScene,
-        GlyphCascadeScene,
-        RadialBloomScene,
+        BioOrganicBloomScene,
+        BioCellMeshScene,
+        BioNeuralPulseScene,
     ],
     [
-        FallingSphereArrayScene,
-        RadialPulseConduitsScene,
-        BinaryParticleLoomScene,
+        LightningArcStormScene,
+        LightningIonBurstScene,
+        LightningPulseGridScene,
     ],
     [
-        PhotoPulseCollageScene,
-        LinearFlowGridScene,
-        RadialBloomScene,
+        AudioSpectrumColumnScene,
+        AudioSpectrumWaveScene,
+        AudioSpectrumRadialScene,
     ],
     [
-        RadialPulseConduitsScene,
-        OrbitalPatternFieldScene,
+        ParticleDriftFieldScene,
+        ParticleRibbonSwirlScene,
+        ParticleCascadeScene,
     ],
     [
-        BinaryParticleLoomScene,
-        PhotoPulseCollageScene,
-        GlyphCascadeScene,
+        ShapeRotatingMosaicScene,
+        ShapePolyOrbitScene,
+        ShapeRecursiveGridScene,
     ],
     [
-        RadialBloomScene,
-        FallingSphereArrayScene,
+        OrientalSeigaihaScene,
+        OrientalAsanohaScene,
+        OrientalKikkoScene,
     ],
     [
-        LinearFlowGridScene,
-        PhotoPulseCollageScene,
-        OrbitalPatternFieldScene,
+        SkyAuroraVeilScene,
+        SkyMeteorShowerScene,
+        SkyNebulaBloomScene,
     ],
     [
-        GlyphCascadeScene,
-        BinaryParticleLoomScene,
+        TextureWeaveScene,
+        TextureNoiseFabricScene,
+        TextureGlassShardScene,
     ],
 ];
 

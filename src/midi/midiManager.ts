@@ -117,7 +117,6 @@ export class MIDIManager {
      * MIDIデバイスの利用可否が変化した際に呼び出されるフック。
      * サブクラスでオーバーライドすることでフォールバック処理などを実装できる。
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected onMidiAvailabilityChanged(_available: boolean): void {
         // Default: noop
     }
