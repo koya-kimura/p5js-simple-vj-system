@@ -3,6 +3,7 @@
 import { GRID_COLUMNS, GRID_ROWS } from '../core/SceneLibrary';
 import { MIDIManager } from './midiManager';
 
+// APC Mini MK2が送出するステータスバイト種別。
 const MIDI_STATUS_IN = {
   NOTE_ON: 0x90,
   CONTROL_CHANGE: 0xb0,
@@ -14,6 +15,7 @@ const FADER_BUTTON_ACTIVE_VELOCITY = 127; // bright white for mute latch state
 
 const GRID_NOTE_COUNT = GRID_COLUMNS * GRID_ROWS;
 
+// グリッド、フェーダー、ラッチボタンが占有するノート/CC範囲。
 const NOTE_RANGES = {
   GRID_START: 0,
   GRID_END: GRID_NOTE_COUNT - 1,
@@ -29,7 +31,7 @@ const MASTER_FADER_INDEX = GRID_COLUMNS;
 const DEFAULT_COLUMN_ACTIVE_VELOCITIES: readonly number[] = [5, 53, 60, 13, 17, 32, 33, 45];
 
 /**
- * APC Mini MK2 のグリッドとフェーダーをシンプルに扱うためのクラス。
+ * APC Mini MK2のグリッドとフェーダーをシンプルに扱うためのクラス。
  * 列ごとに選択されたシーンインデックスとフェーダー値を管理する。
  */
 export class APCMiniMK2Manager extends MIDIManager {
@@ -45,6 +47,7 @@ export class APCMiniMK2Manager extends MIDIManager {
   private initializationComplete = false;
   private midiAvailable = false;
 
+  // 内部状態のバッファーをデバイス仕様に合わせて確保する。
   constructor() {
     super();
     this.columnSceneSelections = Array.from({ length: GRID_COLUMNS }, () => null);
@@ -60,18 +63,22 @@ export class APCMiniMK2Manager extends MIDIManager {
     this.onMidiMessageCallback = this.handleMidiMessage.bind(this);
   }
 
+  // 現在サポートしているグリッド列数を返す。
   getColumnCount(): number {
     return GRID_COLUMNS;
   }
 
+  // 指定列のシーン選択インデックスを問い合わせる。
   getColumnSceneSelection(columnIndex: number): number | null {
     return this.columnSceneSelections[columnIndex] ?? null;
   }
 
+  // 指定列に構成されたシーン数。
   getColumnSceneCount(columnIndex: number): number {
     return this.columnSceneCounts[columnIndex] ?? 0;
   }
 
+  // ラッチ状態を考慮したフェーダー値を正規化値として返す。
   getFaderValue(columnIndex: number): number {
     if (columnIndex < GRID_COLUMNS) {
       if (this.faderButtonLatch[columnIndex]) {
@@ -84,10 +91,12 @@ export class APCMiniMK2Manager extends MIDIManager {
     return this.rawFaderValues[columnIndex] ?? 0;
   }
 
+  // 背景フェーダー(最右)の値を取得する。
   getBackgroundFaderValue(): number {
     return this.rawFaderValues[MASTER_FADER_INDEX] ?? 0;
   }
 
+  // 列のシーン選択を更新し、LEDの再描画フラグを立てる。
   setColumnSceneSelection(columnIndex: number, sceneIndex: number): void {
     if (columnIndex < 0 || columnIndex >= GRID_COLUMNS) {
       return;
@@ -112,6 +121,7 @@ export class APCMiniMK2Manager extends MIDIManager {
     this.dirtyColumns.add(columnIndex);
   }
 
+  // シーンライブラリー側から列ごとの有効スロット数を同期させる。
   configureSceneSlots(counts: number[]): void {
     for (let column = 0; column < GRID_COLUMNS; column++) {
       const nextCount = Math.max(0, Math.min(GRID_ROWS, counts[column] ?? 0));
@@ -134,10 +144,12 @@ export class APCMiniMK2Manager extends MIDIManager {
     }
   }
 
+  // 毎フレーム呼び出され、LED更新のバッチを送信する。
   update(): void {
     this.flushPendingLedUpdates();
   }
 
+  // MIDI接続の成否変化に応じて初期化やリセットを行う。
   protected onMidiAvailabilityChanged(available: boolean): void {
     this.midiAvailable = available;
     this.initializationComplete = true;
@@ -147,10 +159,12 @@ export class APCMiniMK2Manager extends MIDIManager {
     }
   }
 
+  // 初期化完了後かどうかを参照。接続がなくてもtrueになる。
   public isInitialized(): boolean {
     return this.initializationComplete;
   }
 
+  // Web MIDIから渡されたrawメッセージを解析し、種別ごとにハンドラへ振り分ける。
   private handleMidiMessage(event: WebMidi.MIDIMessageEvent): void {
     const [status, data1, data2] = event.data;
     const messageType = status & 0xf0;
@@ -167,6 +181,7 @@ export class APCMiniMK2Manager extends MIDIManager {
     }
   }
 
+  // グリッドボタン押下時のシーン切り替え処理。
   private handleGridPress(rawNote: number, velocity: number): void {
     // Only process button press (velocity > 0), ignore release (velocity = 0)
     if (velocity === 0) {
@@ -187,6 +202,7 @@ export class APCMiniMK2Manager extends MIDIManager {
     }
   }
 
+  // フェーダーの移動を正規化し、列の出力へ反映する。
   private handleFader(controller: number, value: number): void {
     if (controller < NOTE_RANGES.FADERS_START || controller > NOTE_RANGES.FADERS_END) {
       return;
@@ -206,6 +222,7 @@ export class APCMiniMK2Manager extends MIDIManager {
 
   }
 
+  // フェーダー下のラッチボタン（ミュート）操作を処理する。
   private handleFaderButton(rawNote: number, velocity: number): void {
     // Only process button press (velocity > 0), ignore release
     if (velocity === 0) {
@@ -230,6 +247,7 @@ export class APCMiniMK2Manager extends MIDIManager {
     this.dirtyFaderButtons.add(columnIndex);
   }
 
+  // 保留中のLED更新をまとめて送信する。
   private flushPendingLedUpdates(): void {
     if (!this.midiAvailable) {
       return;
@@ -246,6 +264,7 @@ export class APCMiniMK2Manager extends MIDIManager {
     }
   }
 
+  // 全列のLEDを再描画し、視覚状態を初期化する。
   private refreshAllLeds(): void {
     if (!this.midiAvailable) {
       return;
@@ -257,6 +276,7 @@ export class APCMiniMK2Manager extends MIDIManager {
     }
   }
 
+  // 指定列の各行に対してLED出力を送信する。
   private renderColumnLeds(column: number): void {
     const selectedRow = this.columnSceneSelections[column];
     const sceneCount = this.columnSceneCounts[column] ?? 0;
@@ -275,6 +295,7 @@ export class APCMiniMK2Manager extends MIDIManager {
     }
   }
 
+  // ラッチボタンの発光状態を更新する。
   private renderFaderButtonLed(column: number): void {
     const note = this.getFaderButtonNote(column);
     if (note == null) {
@@ -292,10 +313,12 @@ export class APCMiniMK2Manager extends MIDIManager {
     this.dirtyColumns.add(column);
   }
 
+  // Web MIDIアクセシビリティを公開する。
   public isMidiConnected(): boolean {
     return this.midiAvailable;
   }
 
+  // すべてのLEDを消灯してから再同期する。
   private clearAllLeds(): void {
     for (let column = 0; column < GRID_COLUMNS; column++) {
       for (let row = 0; row < GRID_ROWS; row++) {
@@ -313,6 +336,7 @@ export class APCMiniMK2Manager extends MIDIManager {
     }
   }
 
+  // フェーダーラッチボタンのノート番号を列番号から算出する。
   private mapFaderButtonToColumn(rawNote: number): number | null {
     if (rawNote < NOTE_RANGES.FADER_BUTTONS_START || rawNote > NOTE_RANGES.FADER_BUTTONS_END) {
       return null;
@@ -322,6 +346,7 @@ export class APCMiniMK2Manager extends MIDIManager {
     return columnIndex >= 0 && columnIndex < GRID_COLUMNS ? columnIndex : null;
   }
 
+  // 指定列に対応するラッチボタンのノート番号を返す。
   private getFaderButtonNote(columnIndex: number): number | null {
     if (columnIndex < 0 || columnIndex >= GRID_COLUMNS) {
       return null;

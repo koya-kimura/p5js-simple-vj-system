@@ -3,6 +3,7 @@ import { APCMiniMK2Manager } from '../midi/APCMiniMK2Manager';
 import { BPMManager } from '../rhythm/BPMManager';
 import { MicrophoneMonitor } from '../audio/MicrophoneMonitor';
 
+// 数字キー→列選択のマッピング。MIDI未接続時の即時選択に使用。
 const NUMERIC_KEY_TO_COLUMN: Record<string, number> = {
   '1': 0,
   '2': 1,
@@ -42,6 +43,7 @@ export class KeyboardController {
   private readonly bpmManager: BPMManager;
   private readonly microphoneMonitor?: MicrophoneMonitor;
 
+  // グローバルにキーボードイベントを監視し、主要機能へのショートカットを提供する。
   constructor(
     sceneManager: SceneManager,
     midiManager: APCMiniMK2Manager,
@@ -56,6 +58,7 @@ export class KeyboardController {
     window.addEventListener('keydown', this.handleKeyDownRef);
   }
 
+  // 各キーの役割を判定して適切なマネージャに委譲するメインハンドラ。
   private handleKeyDown(event: KeyboardEvent): void {
     const key = event.key.toLowerCase();
 
@@ -125,6 +128,7 @@ export class KeyboardController {
     }
   }
 
+  // リスナーを解除し、ガベージコレクションを促す。
   public dispose(): void {
     window.removeEventListener('keydown', this.handleKeyDownRef);
   }

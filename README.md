@@ -125,12 +125,26 @@ MIDI制御は[`src/midi/APCMiniMK2Manager.ts`](src/midi/APCMiniMK2Manager.ts)が
 
 | 関数 | 説明 |
 | --- | --- |
-| `contextToggleValue(context, index, 'instant' | 'smooth')` | トグルの瞬時値or平滑値（既定は瞬時） |
+| `contextToggleValue(context, key, 'instant' | 'smooth')` | トグルの瞬時値or平滑値（既定は瞬時）。`key`には数字か`'Z'`〜`'M'`（小文字も可）を渡せます |
 | `contextToggleEnergy(context)` | トグル全体の平均（スムーズ値） |
 | `contextToggleAverage(context, start, count)` | 任意範囲の平均 |
 | `contextToggleRange(context, start, count, mode)` | 範囲の配列取得 |
 
 フェーダー値（0〜1）は`SceneDrawContext.faderValue`/`masterFader`から参照できます。
+
+### トグルキーの対応表
+
+| キー | インデックス |
+| --- | --- |
+| `Z`/`z` | 0 |
+| `X`/`x` | 1 |
+| `C`/`c` | 2 |
+| `V`/`v` | 3 |
+| `B`/`b` | 4 |
+| `N`/`n` | 5 |
+| `M`/`m` | 6 |
+
+`contextToggleValue(context, 'M', 0, 'smooth')`のように記述すると、インデックスを覚えなくても扱えます。
 
 ---
 

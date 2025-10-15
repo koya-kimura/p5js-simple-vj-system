@@ -1,5 +1,7 @@
+// 正規化用履歴に保持する秒数とサンプル数の上限。
 const HISTORY_DURATION_SECONDS = 10;
 const HISTORY_MAX_SAMPLES = 1200;
+// ノイズ耐性のために利用する下位・上位パーセンタイル。
 const LOWER_PERCENTILE = 0.1;
 const UPPER_PERCENTILE = 0.9;
 const EPSILON = 1e-6;
@@ -33,6 +35,7 @@ function computePercentile(values: number[], fraction: number): number {
     return sorted[lowerIndex] + (sorted[upperIndex] - sorted[lowerIndex]) * weight;
 }
 
+// マイク入力またはデバッグノイズを解析し、正規化された音量・スペクトラムを供給する。
 export class MicrophoneMonitor {
     private audioContext: AudioContext | null = null;
     private analyser: AnalyserNode | null = null;
@@ -57,11 +60,13 @@ export class MicrophoneMonitor {
     private debugMode = false;
     private debugPhase = 0;
 
+    // 主要なバッファー配列を確保し、以降の計測に備える。
     constructor() {
         this.spectrum = new Array(this.spectrumBins).fill(0);
         this.normalizedSpectrum = new Array(this.spectrumBins).fill(0);
     }
 
+    // マイクアクセスを開始し、Web Audioのアナライザーを構築する。
     async start(): Promise<void> {
         if (this.analyser) {
             return;
@@ -95,9 +100,10 @@ export class MicrophoneMonitor {
         this.normalizedSpectrum.fill(0);
     }
 
+    // 生入力またはデバッグノイズを更新し、履歴と正規化を進める。
     update(): void {
         const timestamp = (typeof performance !== 'undefined' ? performance.now() : Date.now()) * 0.001;
-    const updated = this.debugMode ? this.updateDebugAudio(timestamp) : this.updateLiveAudio();
+        const updated = this.debugMode ? this.updateDebugAudio(timestamp) : this.updateLiveAudio();
         if (!updated) {
             return;
         }
@@ -107,18 +113,22 @@ export class MicrophoneMonitor {
         this.computeNormalization();
     }
 
+    // 正規化済みの音量指標を返す。
     getLevel(): number {
         return this.normalizedLevel;
     }
 
+    // 低域から高域まで並んだスペクトラム64本を返す。
     getSpectrum(): readonly number[] {
         return this.normalizedSpectrum;
     }
 
+    // 実入力が得られているか、またはデバッグモードかを判定する。
     isActive(): boolean {
         return this.debugMode || this.analyser != null;
     }
 
+    // デバッグモードの有効化と同時に履歴をリセットする。
     setDebugMode(enabled: boolean): void {
         if (this.debugMode === enabled) {
             return;
@@ -136,15 +146,18 @@ export class MicrophoneMonitor {
         }
     }
 
+    // デバッグモードをトグルし、最新状態を返す。
     toggleDebugMode(): boolean {
         this.setDebugMode(!this.debugMode);
         return this.debugMode;
     }
 
-    isDebugMode(): boolean {
+    // デバッグモード中かどうかのフラグ。
+    public isDebugMode(): boolean {
         return this.debugMode;
     }
 
+    // マイクからの実データを解析し、生レベルとスペクトラムを更新する。
     private updateLiveAudio(): boolean {
         if (!this.analyser || !this.timeDomainData || !this.frequencyData) {
             return false;
@@ -174,6 +187,7 @@ export class MicrophoneMonitor {
         return true;
     }
 
+    // デバッグノイズ波形を生成し、本番と同じ経路で処理する。
     private updateDebugAudio(timestamp: number): boolean {
         const bins = this.spectrumBins;
         const phase = timestamp;
@@ -200,6 +214,7 @@ export class MicrophoneMonitor {
         return true;
     }
 
+    // Web Audioの周波数データを本システム用にリサンプリングし、平滑化する。
     private populateSpectrumFromFrequencyData(data: Float32Array<ArrayBuffer>): void {
         const analyser = this.analyser;
         if (!analyser) {
@@ -228,11 +243,13 @@ export class MicrophoneMonitor {
         }
     }
 
+    // 音量履歴を追加し、スペクトラム履歴もコピーして蓄積する。
     private pushHistory(timestamp: number): void {
         this.levelHistory.push({ time: timestamp, value: this.smoothedLevel });
         this.spectrumHistory.push({ time: timestamp, values: this.spectrum.slice() });
     }
 
+    // 古い履歴を削除してメモリ使用量を一定に保つ。
     private trimHistory(timestamp: number): void {
         const cutoff = timestamp - HISTORY_DURATION_SECONDS;
 
@@ -251,6 +268,7 @@ export class MicrophoneMonitor {
         }
     }
 
+    // 履歴からパーセンタイルを求め、0〜1の範囲に正規化する。
     private computeNormalization(): void {
         if (this.levelHistory.length === 0 || this.spectrumHistory.length === 0) {
             this.normalizedLevel = clamp01(this.smoothedLevel);
@@ -282,12 +300,14 @@ export class MicrophoneMonitor {
         }
     }
 
+    // 任意の値を上下限に合わせて正規化する汎用ヘルパー。
     private normalizeValue(value: number, floor: number, ceil: number): number {
         const range = Math.max(EPSILON, ceil - floor);
         const adjusted = value - floor;
         return clamp01(adjusted / range);
     }
 
+    // 音量・スペクトラム履歴をすべて削除する。
     private clearHistory(): void {
         this.levelHistory.length = 0;
         this.spectrumHistory.length = 0;

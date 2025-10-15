@@ -6,6 +6,7 @@ import { GRID_ROWS } from './SceneLibrary';
 import { APCMiniMK2Manager } from '../midi/APCMiniMK2Manager';
 import type { IScene, SceneDrawContext } from './IScene';
 
+// 1列ぶんの描画バッファーとシーン状態を保持する内部構造。
 interface ColumnState {
     buffer: p5.Graphics;
     constructors: SceneConstructor[];
@@ -13,6 +14,7 @@ interface ColumnState {
     scene: IScene | null;
 }
 
+// APC Mini MK2とシーン群の仲介役。入力状態を監視し、各シーンの生成・更新・合成を統括する。
 export class SceneManager {
     private readonly apcManager: APCMiniMK2Manager;
     private readonly sceneLibrary: SceneLibraryGrid;
@@ -29,11 +31,13 @@ export class SceneManager {
     private audioDebugMode = false;
     private audioSpectrum: readonly number[] = [];
 
+    // APC Mini MK2のI/Oとシーンライブラリーを受け取って初期化する。
     constructor(apcManager: APCMiniMK2Manager, sceneLibrary: SceneLibraryGrid) {
         this.apcManager = apcManager;
         this.sceneLibrary = sceneLibrary;
     }
 
+    // シーンライブラリーから列バッファーとインスタンスを生成し、初期状態へと揃える。
     setup(p: p5): void {
         this.columns = [];
         this.elapsedSeconds = 0;
@@ -57,6 +61,7 @@ export class SceneManager {
         });
     }
 
+    // システムから渡されるフレーム情報とオーディオ解析結果を用い、各列を更新する。
     update(
         p: p5,
         deltaSeconds: number,
@@ -64,10 +69,10 @@ export class SceneManager {
         audioDebugMode: boolean,
         audioSpectrum: readonly number[],
     ): void {
-    this.elapsedSeconds += deltaSeconds;
-    this.audioLevel = Math.max(0, Math.min(1, audioLevel));
-    this.audioDebugMode = audioDebugMode;
-    this.audioSpectrum = audioSpectrum.slice();
+        this.elapsedSeconds += deltaSeconds;
+        this.audioLevel = Math.max(0, Math.min(1, audioLevel));
+        this.audioDebugMode = audioDebugMode;
+        this.audioSpectrum = audioSpectrum.slice();
         this.apcManager.update();
 
         const smoothingDuration = this.toggleSmoothingDuration;
@@ -141,6 +146,7 @@ export class SceneManager {
         }
     }
 
+    // オフスクリーンバッファーから最終キャンバスへ合成し、必要ならデバッグオーバーレイも描画する。
     composite(p: p5): void {
         this.applyBackground(p);
 
@@ -187,6 +193,7 @@ export class SceneManager {
         this.drawDebugOverlay(p);
     }
 
+    // 背景フェーダー値に応じた黒背景を設定する。
     private applyBackground(p: p5): void {
         const rawValue = this.apcManager.getBackgroundFaderValue();
         const clamped = Math.max(0, Math.min(1, rawValue));
@@ -194,6 +201,7 @@ export class SceneManager {
         p.background(0, 0, 0, alpha);
     }
 
+    // ウィンドウサイズ変更時に列ごとのバッファーとシーンを再初期化する。
     resize(p: p5): void {
         for (let columnIndex = 0; columnIndex < this.columns.length; columnIndex++) {
             const slot = this.columns[columnIndex];
@@ -204,10 +212,12 @@ export class SceneManager {
         }
     }
 
+    // デバッグオーバーレイの表示状態をトグルする。
     public toggleDebugOverlay(): void {
         this.debugOverlayActive = !this.debugOverlayActive;
     }
 
+    // デバッグ表示用に、シーン名の取得ロジックを一本化する。
     private getSceneDebugName(slot: ColumnState, selection: number | null): string {
         if (slot.scene) {
             const maybeNamed = (slot.scene as { name?: unknown }).name;
@@ -232,6 +242,7 @@ export class SceneManager {
         return '—';
     }
 
+    // 現在のシステム状態と列情報をまとめてOSDとして描画する。
     private drawDebugOverlay(p: p5): void {
         if (!this.debugOverlayActive) {
             return;
@@ -274,8 +285,8 @@ export class SceneManager {
             const value = this.toggleSmoothStates[index] ?? 0;
             return `${label}:${value.toFixed(2)}`;
         });
-    lines.push(`Toggles Smooth (0.2s): ${smoothSegments.join(' ')}`);
-    lines.push(`Audio Level (norm): ${this.audioLevel.toFixed(3)} (${this.audioDebugMode ? 'debug' : 'live'})`);
+        lines.push(`Toggles Smooth (0.2s): ${smoothSegments.join(' ')}`);
+        lines.push(`Audio Level (norm): ${this.audioLevel.toFixed(3)} (${this.audioDebugMode ? 'debug' : 'live'})`);
         lines.push(`Audio Source: ${this.audioDebugMode ? 'debug noise' : 'microphone'}`);
         if (this.audioSpectrum.length > 0) {
             const low = this.audioSpectrum[0] ?? 0;
@@ -330,6 +341,7 @@ export class SceneManager {
         p.pop();
     }
 
+    // キャンバスサイズに一致したオフスクリーンバッファーを生成する。
     private createBuffer(p: p5): p5.Graphics {
         const buffer = p.createGraphics(p.width, p.height);
         buffer.pixelDensity(p.pixelDensity());
@@ -337,6 +349,7 @@ export class SceneManager {
         return buffer;
     }
 
+    // 指定インデックスのシーンを安全に生成する。存在しない場合はnullを返す。
     private instantiateScene(constructors: SceneConstructor[], index: number | null): IScene | null {
         if (index == null) {
             return null;
@@ -349,6 +362,7 @@ export class SceneManager {
         return new SceneCtor();
     }
 
+    // キーボード操作で列を直接選択したときの処理。MIDI接続中はフォールバックを無効化する。
     public handleKeyboardSelection(columnIndex: number | null): void {
         if (this.apcManager.isMidiConnected()) {
             return;
@@ -361,6 +375,7 @@ export class SceneManager {
         }
     }
 
+    // キーボード操作で列内のシーンを順番に切り替える。
     public cycleKeyboardSelection(columnIndex: number): void {
         if (this.apcManager.isMidiConnected()) {
             return;
@@ -380,6 +395,7 @@ export class SceneManager {
         this.keyboardOverrideColumn = columnIndex;
     }
 
+    // 拍リセット時に経過時間と列のシーンを初期状態へ戻す。
     public resetBeat(): void {
         this.elapsedSeconds = 0;
         this.columns.forEach((column) => {
@@ -388,6 +404,7 @@ export class SceneManager {
         });
     }
 
+    // トグル値をインデックス指定で反転させる。範囲外入力は無視する。
     public toggleParameter(index: number): void {
         if (index < 0 || index >= this.toggleStates.length) {
             return;
@@ -395,6 +412,7 @@ export class SceneManager {
         this.toggleStates[index] = this.toggleStates[index] > 0 ? 0 : 1;
     }
 
+    // トグル値を明示的に設定する。外部デバイスからの更新を想定。
     public setParameter(index: number, active: boolean): void {
         if (index < 0 || index >= this.toggleStates.length) {
             return;
@@ -402,10 +420,12 @@ export class SceneManager {
         this.toggleStates[index] = active ? 1 : 0;
     }
 
+    // 現在の瞬時トグル値一覧を取得する。
     public getToggleStates(): readonly number[] {
         return this.toggleStates;
     }
 
+    // 平滑処理済みのトグル値を取得する。
     public getSmoothedToggleStates(): readonly number[] {
         return this.toggleSmoothStates;
     }

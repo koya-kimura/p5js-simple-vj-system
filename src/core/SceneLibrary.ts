@@ -26,6 +26,7 @@ import { TextureWeaveScene } from '../scenes/texture/TextureWeaveScene';
 import { TextureNoiseFabricScene } from '../scenes/texture/TextureNoiseFabricScene';
 import { TextureGlassShardScene } from '../scenes/texture/TextureGlassShardScene';
 
+// APC Mini MK2とレイアウトを揃えるための列・行の最大数。
 export const GRID_COLUMNS = 8;
 export const GRID_ROWS = 8;
 
@@ -33,6 +34,7 @@ export type SceneConstructor = new () => IScene;
 export type SceneLibraryColumn = SceneConstructor[];
 export type SceneLibraryGrid = SceneLibraryColumn[];
 
+// デフォルトでプレイアブルなシーンの一覧。列順がデバイスの列に対応する。
 export const DEFAULT_SCENE_LIBRARY: SceneLibraryGrid = [
     [
         BioOrganicBloomScene,
@@ -80,5 +82,6 @@ export function getColumnScenes(
     library: SceneLibraryGrid,
     columnIndex: number,
 ): SceneLibraryColumn {
+    // 指定列が未定義の場合でも空配列を返し、呼び出し側でのnullチェックを不要にする。
     return library[columnIndex] ?? [];
 }
