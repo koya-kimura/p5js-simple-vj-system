@@ -34,7 +34,8 @@ export class SkyAuroraVeilScene implements IScene {
     }));
   }
 
-  draw(_p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+  draw(p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+    void p;
     buffer.clear();
     buffer.push();
     buffer.noStroke();
@@ -77,6 +78,7 @@ export class SkyMeteorShowerScene implements IScene {
   }
 
   draw(p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+    void p;
     buffer.clear();
     buffer.push();
     buffer.strokeWeight(2.2);
@@ -118,6 +120,7 @@ export class SkyNebulaBloomScene implements IScene {
   }
 
   draw(p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+    void p;
     buffer.clear();
     buffer.push();
     buffer.noStroke();

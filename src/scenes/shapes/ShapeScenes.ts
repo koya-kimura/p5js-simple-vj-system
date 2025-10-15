@@ -45,6 +45,7 @@ export class ShapeRotatingMosaicScene implements IScene {
   }
 
   draw(p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+    void p;
     buffer.clear();
     buffer.push();
     buffer.rectMode(p.CENTER);
@@ -84,6 +85,7 @@ export class ShapePolyOrbitScene implements IScene {
   }
 
   draw(p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+    void p;
     buffer.clear();
     buffer.push();
     buffer.translate(buffer.width / 2, buffer.height / 2);
@@ -137,6 +139,7 @@ export class ShapeRecursiveGridScene implements IScene {
   }
 
   draw(p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+    void p;
     buffer.clear();
     buffer.push();
     buffer.rectMode(p.CENTER);

@@ -43,7 +43,8 @@ export class OrientalSeigaihaScene implements IScene {
     }
   }
 
-  draw(_p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+  draw(p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+    void p;
     buffer.clear();
     buffer.push();
     buffer.noFill();
@@ -92,7 +93,8 @@ export class OrientalAsanohaScene implements IScene {
     }
   }
 
-  draw(_p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+  draw(p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+    void p;
     buffer.clear();
     buffer.push();
     buffer.noFill();
@@ -142,6 +144,7 @@ export class OrientalKikkoScene implements IScene {
   }
 
   draw(p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+    void p;
     buffer.clear();
     buffer.push();
     buffer.noFill();

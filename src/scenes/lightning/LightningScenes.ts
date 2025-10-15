@@ -34,6 +34,7 @@ export class LightningArcStormScene implements IScene {
   }
 
   draw(p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+    void p;
     buffer.clear();
     buffer.push();
     buffer.strokeWeight(2.4);
@@ -83,6 +84,7 @@ export class LightningIonBurstScene implements IScene {
   }
 
   draw(p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+    void p;
     buffer.clear();
     buffer.push();
     buffer.translate(buffer.width / 2, buffer.height / 2);
@@ -138,6 +140,7 @@ export class LightningPulseGridScene implements IScene {
   }
 
   draw(p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+    void p;
     buffer.clear();
     buffer.push();
     buffer.strokeWeight(1);

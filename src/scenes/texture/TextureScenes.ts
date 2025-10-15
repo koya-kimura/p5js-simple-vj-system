@@ -55,7 +55,8 @@ export class TextureWeaveScene implements IScene {
     }
   }
 
-  draw(_p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+  draw(p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+    void p;
     buffer.clear();
     buffer.push();
     buffer.noStroke();
@@ -103,6 +104,7 @@ export class TextureNoiseFabricScene implements IScene {
   }
 
   draw(p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+    void p;
     buffer.clear();
     buffer.push();
     buffer.noStroke();
@@ -147,6 +149,7 @@ export class TextureGlassShardScene implements IScene {
   }
 
   draw(p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+    void p;
     buffer.clear();
     buffer.push();
     buffer.noStroke();

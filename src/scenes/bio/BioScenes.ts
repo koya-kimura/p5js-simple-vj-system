@@ -35,9 +35,10 @@ export class BioOrganicBloomScene implements IScene {
   }
 
   draw(p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
-  const energy = contextToggleEnergy(context, 'smooth');
-    buffer.push();
+    void p;
+    const energy = contextToggleEnergy(context, 'smooth');
     buffer.clear();
+    buffer.push();
     buffer.translate(buffer.width / 2, buffer.height / 2);
     buffer.noFill();
     buffer.strokeWeight(energy > 0 ? 2.4 : 1.4);
@@ -49,7 +50,7 @@ export class BioOrganicBloomScene implements IScene {
       const radius = node.baseRadius * (0.8 + 0.2 * Math.sin(phase * (1 + energy)));
       const hue = (120 + energy * 160 + index * 18) % 360;
       buffer.stroke(hue, 60 + energy * 30, 90, 0.85);
-  const petals = 6 + Math.floor(contextToggleValue(context, index % 7, 0, 'smooth') * 6);
+      const petals = 6 + Math.floor(contextToggleValue(context, index % 7, 0, 'smooth') * 6);
       buffer.beginShape();
       for (let i = 0; i <= petals; i++) {
         const angle = (p.TWO_PI / petals) * i;
@@ -89,13 +90,14 @@ export class BioCellMeshScene implements IScene {
   }
 
   draw(p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+    void p;
     buffer.clear();
     buffer.push();
     buffer.noStroke();
     buffer.colorMode(p.HSB, 360, 100, 100, 1);
 
-  const columnInfluence = contextToggleAverage(context, 0, 3);
-  const membraneInfluence = contextToggleAverage(context, 3, 4);
+    const columnInfluence = contextToggleAverage(context, 0, 3);
+    const membraneInfluence = contextToggleAverage(context, 3, 4);
 
     this.cells.forEach((cell, index) => {
       const anim = 0.5 + 0.5 * Math.sin(context.elapsedSeconds * 1.5 + cell.phase);
@@ -126,6 +128,7 @@ export class BioNeuralPulseScene implements IScene {
   }
 
   draw(p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+    void p;
     buffer.clear();
     buffer.push();
     buffer.translate(buffer.width / 2, buffer.height / 2);
@@ -134,7 +137,7 @@ export class BioNeuralPulseScene implements IScene {
     buffer.colorMode(p.HSB, 360, 100, 100, 1);
 
     const energy = contextToggleEnergy(context);
-  const branchFactor = 2 + Math.floor(contextToggleAverage(context, 0, 3) * 3);
+    const branchFactor = 2 + Math.floor(contextToggleAverage(context, 0, 3) * 3);
 
     this.links.forEach((link, index) => {
       const phase = context.elapsedSeconds * link.speed;

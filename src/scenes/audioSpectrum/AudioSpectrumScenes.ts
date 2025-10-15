@@ -69,6 +69,7 @@ export class AudioSpectrumColumnScene implements IScene {
   }
 
   draw(p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+    void p;
     buffer.clear();
     buffer.push();
     buffer.noStroke();
@@ -114,22 +115,24 @@ export class AudioSpectrumWaveScene implements IScene {
   }
 
   draw(p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+    void p;
     buffer.clear();
     buffer.push();
     buffer.noStroke();
-  const low = contextToggleAverage(context, 0, 3, 'smooth');
-  const mid = contextToggleAverage(context, 3, 2, 'smooth');
-  const high = contextToggleAverage(context, 5, 2, 'smooth');
-  const energy = contextToggleEnergy(context, 'smooth');
-  const audioLevel = Math.min(1, context.audioLevel * 3.2);
-  const spectrum = context.audioSpectrum;
 
-  const lowSpectrum = spectrumAverage(spectrum, 0, 0.2);
-  const midSpectrum = spectrumAverage(spectrum, 0.2, 0.6);
-  const highSpectrum = spectrumAverage(spectrum, 0.6, 1);
+    const low = contextToggleAverage(context, 0, 3, 'smooth');
+    const mid = contextToggleAverage(context, 3, 2, 'smooth');
+    const high = contextToggleAverage(context, 5, 2, 'smooth');
+    const energy = contextToggleEnergy(context, 'smooth');
+    const audioLevel = Math.min(1, context.audioLevel * 3.2);
+    const spectrum = context.audioSpectrum;
 
-  const amplitude = buffer.height * (0.08 + lowSpectrum * 0.6 + audioLevel * 0.3 + low * 0.15);
-  const thickness = 2 + (midSpectrum + audioLevel + mid) * 5;
+    const lowSpectrum = spectrumAverage(spectrum, 0, 0.2);
+    const midSpectrum = spectrumAverage(spectrum, 0.2, 0.6);
+    const highSpectrum = spectrumAverage(spectrum, 0.6, 1);
+
+    const amplitude = buffer.height * (0.08 + lowSpectrum * 0.6 + audioLevel * 0.3 + low * 0.15);
+    const thickness = 2 + (midSpectrum + audioLevel + mid) * 5;
 
     for (let layer = 0; layer < 3; layer++) {
       buffer.beginShape();
@@ -173,6 +176,7 @@ export class AudioSpectrumRadialScene implements IScene {
   }
 
   draw(p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
+    void p;
     buffer.clear();
     buffer.push();
     buffer.translate(buffer.width / 2, buffer.height / 2);
