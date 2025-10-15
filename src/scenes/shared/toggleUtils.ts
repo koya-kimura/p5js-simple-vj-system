@@ -1,6 +1,11 @@
 import type { SceneDrawContext } from '../../core/IScene';
 
 export type ToggleArray = readonly number[];
+export type ToggleSampleMode = 'instant' | 'smooth';
+
+function resolveContextToggles(context: SceneDrawContext, mode: ToggleSampleMode): ToggleArray {
+  return mode === 'smooth' ? context.togglesSmooth : context.toggles;
+}
 
 export function toggleValue(toggles: ToggleArray, index: number, fallback = 0): number {
   if (index < 0 || index >= toggles.length) {
@@ -36,14 +41,18 @@ export function toggleEnergy(toggles: ToggleArray): number {
   return toggles.reduce((sum, value) => sum + value, 0) / toggles.length;
 }
 
-export function contextToggleValue(context: SceneDrawContext, index: number, fallback = 0): number {
-  return toggleValue(context.toggles, index, fallback);
+export function contextToggles(context: SceneDrawContext, mode: ToggleSampleMode = 'instant'): ToggleArray {
+  return resolveContextToggles(context, mode);
 }
 
-export function contextToggleAverage(context: SceneDrawContext, start: number, count: number): number {
-  return toggleRangeAverage(context.toggles, start, count);
+export function contextToggleValue(context: SceneDrawContext, index: number, fallback = 0, mode: ToggleSampleMode = 'instant'): number {
+  return toggleValue(resolveContextToggles(context, mode), index, fallback);
 }
 
-export function contextToggleEnergy(context: SceneDrawContext): number {
-  return toggleEnergy(context.toggles);
+export function contextToggleAverage(context: SceneDrawContext, start: number, count: number, mode: ToggleSampleMode = 'instant'): number {
+  return toggleRangeAverage(resolveContextToggles(context, mode), start, count);
+}
+
+export function contextToggleEnergy(context: SceneDrawContext, mode: ToggleSampleMode = 'instant'): number {
+  return toggleEnergy(resolveContextToggles(context, mode));
 }

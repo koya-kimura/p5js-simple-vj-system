@@ -7,6 +7,7 @@ export interface SceneDrawContext {
     elapsedSeconds: number;
     deltaSeconds: number;
     toggles: readonly number[];
+    togglesSmooth: readonly number[];
 }
 
 /**

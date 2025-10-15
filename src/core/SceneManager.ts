@@ -23,6 +23,8 @@ export class SceneManager {
     private debugOverlayActive = false;
     private lastVisibleColumnCount = 0;
     private readonly toggleStates: number[] = Array(7).fill(0);
+    private readonly toggleSmoothStates: number[] = Array(7).fill(0);
+    private readonly toggleSmoothingDuration = 0.2;
 
     constructor(apcManager: APCMiniMK2Manager, sceneLibrary: SceneLibraryGrid) {
         this.apcManager = apcManager;
@@ -55,6 +57,20 @@ export class SceneManager {
     update(p: p5, deltaSeconds: number): void {
         this.elapsedSeconds += deltaSeconds;
         this.apcManager.update();
+
+        const smoothingDuration = this.toggleSmoothingDuration;
+        if (smoothingDuration <= 0) {
+            for (let i = 0; i < this.toggleSmoothStates.length; i++) {
+                this.toggleSmoothStates[i] = this.toggleStates[i];
+            }
+        } else if (deltaSeconds > 0) {
+            const blend = Math.min(1, deltaSeconds / smoothingDuration);
+            for (let i = 0; i < this.toggleSmoothStates.length; i++) {
+                const current = this.toggleSmoothStates[i];
+                const target = this.toggleStates[i];
+                this.toggleSmoothStates[i] = current + (target - current) * blend;
+            }
+        }
 
         const isMidiConnected = this.apcManager.isMidiConnected();
         if (isMidiConnected) {
@@ -104,6 +120,7 @@ export class SceneManager {
                 elapsedSeconds: this.elapsedSeconds,
                 deltaSeconds,
                 toggles: this.toggleStates,
+                togglesSmooth: this.toggleSmoothStates,
             };
             slot.scene.draw(p, slot.buffer, context);
         }
@@ -238,6 +255,12 @@ export class SceneManager {
         });
         lines.push(`Toggles: ${toggleSegments.join(' ')}`);
 
+        const smoothSegments = toggleKeys.map((label, index) => {
+            const value = this.toggleSmoothStates[index] ?? 0;
+            return `${label}:${value.toFixed(2)}`;
+        });
+    lines.push(`Toggles Smooth (0.2s): ${smoothSegments.join(' ')}`);
+
         for (let columnIndex = 0; columnIndex < this.columns.length; columnIndex++) {
             const slot = this.columns[columnIndex];
             const selection = this.apcManager.getColumnSceneSelection(columnIndex);
@@ -358,5 +381,9 @@ export class SceneManager {
 
     public getToggleStates(): readonly number[] {
         return this.toggleStates;
+    }
+
+    public getSmoothedToggleStates(): readonly number[] {
+        return this.toggleSmoothStates;
     }
 }

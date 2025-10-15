@@ -35,7 +35,7 @@ export class BioOrganicBloomScene implements IScene {
   }
 
   draw(p: p5, buffer: p5.Graphics, context: SceneDrawContext): void {
-    const energy = contextToggleEnergy(context);
+  const energy = contextToggleEnergy(context, 'smooth');
     buffer.push();
     buffer.clear();
     buffer.translate(buffer.width / 2, buffer.height / 2);
@@ -49,7 +49,7 @@ export class BioOrganicBloomScene implements IScene {
       const radius = node.baseRadius * (0.8 + 0.2 * Math.sin(phase * (1 + energy)));
       const hue = (120 + energy * 160 + index * 18) % 360;
       buffer.stroke(hue, 60 + energy * 30, 90, 0.85);
-      const petals = 6 + Math.floor(contextToggleValue(context, index % 7) * 6);
+  const petals = 6 + Math.floor(contextToggleValue(context, index % 7, 0, 'smooth') * 6);
       buffer.beginShape();
       for (let i = 0; i <= petals; i++) {
         const angle = (p.TWO_PI / petals) * i;
