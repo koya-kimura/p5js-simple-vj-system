@@ -1,4 +1,4 @@
-import type { SceneDrawContext } from '../../core/IScene';
+import type { SceneDrawContext } from '../core/IScene';
 
 export type ToggleArray = readonly number[];
 export type ToggleSampleMode = 'instant' | 'smooth';
