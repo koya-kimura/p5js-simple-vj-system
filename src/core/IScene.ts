@@ -8,6 +8,9 @@ export interface SceneDrawContext {
     deltaSeconds: number;
     toggles: readonly number[];
     togglesSmooth: readonly number[];
+    audioLevel: number;
+    audioDebug: boolean;
+    audioSpectrum: readonly number[];
 }
 
 /**

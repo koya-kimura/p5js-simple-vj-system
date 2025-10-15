@@ -1,6 +1,7 @@
 import { SceneManager } from '../core/SceneManager';
 import { APCMiniMK2Manager } from '../midi/APCMiniMK2Manager';
 import { BPMManager } from '../rhythm/BPMManager';
+import { MicrophoneMonitor } from '../audio/MicrophoneMonitor';
 
 const NUMERIC_KEY_TO_COLUMN: Record<string, number> = {
   '1': 0,
@@ -39,11 +40,18 @@ export class KeyboardController {
   private readonly sceneManager: SceneManager;
   private readonly midiManager: APCMiniMK2Manager;
   private readonly bpmManager: BPMManager;
+  private readonly microphoneMonitor?: MicrophoneMonitor;
 
-  constructor(sceneManager: SceneManager, midiManager: APCMiniMK2Manager, bpmManager: BPMManager) {
+  constructor(
+    sceneManager: SceneManager,
+    midiManager: APCMiniMK2Manager,
+    bpmManager: BPMManager,
+    microphoneMonitor?: MicrophoneMonitor,
+  ) {
     this.sceneManager = sceneManager;
     this.midiManager = midiManager;
     this.bpmManager = bpmManager;
+    this.microphoneMonitor = microphoneMonitor;
     this.handleKeyDownRef = this.handleKeyDown.bind(this);
     window.addEventListener('keydown', this.handleKeyDownRef);
   }
@@ -53,6 +61,12 @@ export class KeyboardController {
 
     if (key === 'p') {
       this.sceneManager.toggleDebugOverlay();
+      event.preventDefault();
+      return;
+    }
+
+    if (key === 'l') {
+      this.microphoneMonitor?.toggleDebugMode();
       event.preventDefault();
       return;
     }

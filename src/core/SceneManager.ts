@@ -25,6 +25,9 @@ export class SceneManager {
     private readonly toggleStates: number[] = Array(7).fill(0);
     private readonly toggleSmoothStates: number[] = Array(7).fill(0);
     private readonly toggleSmoothingDuration = 0.2;
+    private audioLevel = 0;
+    private audioDebugMode = false;
+    private audioSpectrum: readonly number[] = [];
 
     constructor(apcManager: APCMiniMK2Manager, sceneLibrary: SceneLibraryGrid) {
         this.apcManager = apcManager;
@@ -54,8 +57,17 @@ export class SceneManager {
         });
     }
 
-    update(p: p5, deltaSeconds: number): void {
-        this.elapsedSeconds += deltaSeconds;
+    update(
+        p: p5,
+        deltaSeconds: number,
+        audioLevel: number,
+        audioDebugMode: boolean,
+        audioSpectrum: readonly number[],
+    ): void {
+    this.elapsedSeconds += deltaSeconds;
+    this.audioLevel = Math.max(0, Math.min(1, audioLevel));
+    this.audioDebugMode = audioDebugMode;
+    this.audioSpectrum = audioSpectrum.slice();
         this.apcManager.update();
 
         const smoothingDuration = this.toggleSmoothingDuration;
@@ -121,6 +133,9 @@ export class SceneManager {
                 deltaSeconds,
                 toggles: this.toggleStates,
                 togglesSmooth: this.toggleSmoothStates,
+                audioLevel: this.audioLevel,
+                audioDebug: this.audioDebugMode,
+                audioSpectrum: this.audioSpectrum,
             };
             slot.scene.draw(p, slot.buffer, context);
         }
@@ -260,6 +275,14 @@ export class SceneManager {
             return `${label}:${value.toFixed(2)}`;
         });
     lines.push(`Toggles Smooth (0.2s): ${smoothSegments.join(' ')}`);
+    lines.push(`Audio Level (norm): ${this.audioLevel.toFixed(3)} (${this.audioDebugMode ? 'debug' : 'live'})`);
+        lines.push(`Audio Source: ${this.audioDebugMode ? 'debug noise' : 'microphone'}`);
+        if (this.audioSpectrum.length > 0) {
+            const low = this.audioSpectrum[0] ?? 0;
+            const mid = this.audioSpectrum[Math.floor(this.audioSpectrum.length / 2)] ?? 0;
+            const high = this.audioSpectrum[this.audioSpectrum.length - 1] ?? 0;
+            lines.push(`Spectrum Low/Mid/High (norm): ${low.toFixed(2)} / ${mid.toFixed(2)} / ${high.toFixed(2)}`);
+        }
 
         for (let columnIndex = 0; columnIndex < this.columns.length; columnIndex++) {
             const slot = this.columns[columnIndex];
