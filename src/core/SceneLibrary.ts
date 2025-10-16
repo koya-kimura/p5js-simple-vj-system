@@ -1,30 +1,14 @@
 // src/core/SceneLibrary.ts
 
 import type { IScene } from './IScene';
-import { BioOrganicBloomScene } from '../scenes/bio/BioOrganicBloomScene';
-import { BioCellMeshScene } from '../scenes/bio/BioCellMeshScene';
-import { BioNeuralPulseScene } from '../scenes/bio/BioNeuralPulseScene';
-import { LightningArcStormScene } from '../scenes/lightning/LightningArcStormScene';
-import { LightningIonBurstScene } from '../scenes/lightning/LightningIonBurstScene';
-import { LightningPulseGridScene } from '../scenes/lightning/LightningPulseGridScene';
-import { AudioSpectrumColumnScene } from '../scenes/audioSpectrum/AudioSpectrumColumnScene';
-import { AudioSpectrumWaveScene } from '../scenes/audioSpectrum/AudioSpectrumWaveScene';
-import { AudioSpectrumRadialScene } from '../scenes/audioSpectrum/AudioSpectrumRadialScene';
-import { ParticleDriftFieldScene } from '../scenes/particle/ParticleDriftFieldScene';
-import { ParticleRibbonSwirlScene } from '../scenes/particle/ParticleRibbonSwirlScene';
-import { ParticleCascadeScene } from '../scenes/particle/ParticleCascadeScene';
-import { ShapeRotatingMosaicScene } from '../scenes/shapes/ShapeRotatingMosaicScene';
-import { ShapePolyOrbitScene } from '../scenes/shapes/ShapePolyOrbitScene';
-import { ShapeRecursiveGridScene } from '../scenes/shapes/ShapeRecursiveGridScene';
-import { OrientalSeigaihaScene } from '../scenes/oriental/OrientalSeigaihaScene';
-import { OrientalAsanohaScene } from '../scenes/oriental/OrientalAsanohaScene';
-import { OrientalKikkoScene } from '../scenes/oriental/OrientalKikkoScene';
-import { SkyAuroraVeilScene } from '../scenes/sky/SkyAuroraVeilScene';
-import { SkyMeteorShowerScene } from '../scenes/sky/SkyMeteorShowerScene';
-import { SkyNebulaBloomScene } from '../scenes/sky/SkyNebulaBloomScene';
-import { TextureWeaveScene } from '../scenes/texture/TextureWeaveScene';
-import { TextureNoiseFabricScene } from '../scenes/texture/TextureNoiseFabricScene';
-import { TextureGlassShardScene } from '../scenes/texture/TextureGlassShardScene';
+import { SampleCircleScene } from '../scenes/sample/SampleCircleScene';
+import { WaterUpBubbleScene } from '../scenes/water/WaterUpBubbleScene';
+import { SpectrumShuffleBarScene } from '../scenes/spectrum/SpectrumShuffleBarScene';
+import { UIClockPanelScene } from '../scenes/ui/UIClockPanelScene';
+import { UIToggleStatusScene } from '../scenes/ui/UIToggleStatusScene';
+import { UIAudioTimelineScene } from '../scenes/ui/UIAudioTimelineScene';
+import { UISpectrumHudScene } from '../scenes/ui/UISpectrumHudScene';
+import { WaveCircleScene } from '../scenes/wave/WaveCircleScene';
 
 // APC Mini MK2とレイアウトを揃えるための列・行の最大数。
 export const GRID_COLUMNS = 8;
@@ -37,44 +21,31 @@ export type SceneLibraryGrid = SceneLibraryColumn[];
 // デフォルトでプレイアブルなシーンの一覧。列順がデバイスの列に対応する。
 export const DEFAULT_SCENE_LIBRARY: SceneLibraryGrid = [
     [
-        BioOrganicBloomScene,
-        BioCellMeshScene,
-        BioNeuralPulseScene,
+        SpectrumShuffleBarScene
     ],
     [
-        LightningArcStormScene,
-        LightningIonBurstScene,
-        LightningPulseGridScene,
+        WaterUpBubbleScene
     ],
     [
-        AudioSpectrumColumnScene,
-        AudioSpectrumWaveScene,
-        AudioSpectrumRadialScene,
+        WaveCircleScene
     ],
     [
-        ParticleDriftFieldScene,
-        ParticleRibbonSwirlScene,
-        ParticleCascadeScene,
+        SampleCircleScene
     ],
     [
-        ShapeRotatingMosaicScene,
-        ShapePolyOrbitScene,
-        ShapeRecursiveGridScene,
+        SampleCircleScene
     ],
     [
-        OrientalSeigaihaScene,
-        OrientalAsanohaScene,
-        OrientalKikkoScene,
+        SampleCircleScene
     ],
     [
-        SkyAuroraVeilScene,
-        SkyMeteorShowerScene,
-        SkyNebulaBloomScene,
+        SampleCircleScene
     ],
     [
-        TextureWeaveScene,
-        TextureNoiseFabricScene,
-        TextureGlassShardScene,
+        UIClockPanelScene,
+        UIToggleStatusScene,
+        UIAudioTimelineScene,
+        UISpectrumHudScene
     ],
 ];
 

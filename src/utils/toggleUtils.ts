@@ -75,7 +75,33 @@ export function contextToggles(context: SceneDrawContext, mode: ToggleSampleMode
 }
 
 // キーを指定してコンテキスト内の値を調達する。フォールバック、サンプルモードに対応。
-export function contextToggleValue(context: SceneDrawContext, key: ToggleKey, fallback = 0, mode: ToggleSampleMode = 'instant'): number {
+export function contextToggleValue(context: SceneDrawContext, key: ToggleKey, mode?: ToggleSampleMode): number;
+export function contextToggleValue(context: SceneDrawContext, key: ToggleKey, fallback: number): number;
+export function contextToggleValue(context: SceneDrawContext, key: ToggleKey, mode: ToggleSampleMode, fallback: number): number;
+export function contextToggleValue(context: SceneDrawContext, key: ToggleKey, fallback: number, mode: ToggleSampleMode): number;
+export function contextToggleValue(
+  context: SceneDrawContext,
+  key: ToggleKey,
+  third?: number | ToggleSampleMode,
+  fourth?: number | ToggleSampleMode,
+): number {
+  let fallback = 0;
+  let mode: ToggleSampleMode = 'instant';
+
+  if (typeof third === 'string') {
+    mode = third;
+    if (typeof fourth === 'number') {
+      fallback = fourth;
+    }
+  } else {
+    if (typeof third === 'number') {
+      fallback = third;
+    }
+    if (typeof fourth === 'string') {
+      mode = fourth;
+    }
+  }
+
   const toggles = resolveContextToggles(context, mode);
   const index = resolveToggleIndex(key);
   if (index < 0) {
